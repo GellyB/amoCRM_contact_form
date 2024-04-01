@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Форма контактов</title>
+    <link rel="stylesheet" type="text/css" href="static/css/test_css.css">
+</head>
+<body>
+    <h2>Форма обратной связи</h2>
+    <form action="/submit_form" method="post">
+        <label for="name">Имя:</label><br>
+        <input type="text" id="name" name="name" required><br>
+        <label for="email">Почта:</label><br>
+        <input type="email" id="email" name="email" required><br>
+        <label for="phone">Телефон:</label><br>
+        <input type="tel" id="phone" name="phone" required><br>
+        <label for="question">Вопрос:</label><br>
+        <textarea id="question" name="question" required></textarea><br>
+        <input type="submit" value="Отправить">
+    </form>
+</body>
+</html>
