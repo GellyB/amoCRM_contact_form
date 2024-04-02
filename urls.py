@@ -3,6 +3,7 @@ import jwt
 import requests
 from datetime import datetime
 import time
+from random import randint
 import logging
 from requests.exceptions import JSONDecodeError
 from dotenv import load_dotenv
@@ -24,7 +25,7 @@ client_secret = os.getenv("AMOCRM_CLIENT_SECRET")
 redirect_uri = os.getenv("AMOCRM_REDIRECT_URL")
 
 # Секретный ключ интеграции. Может быть изменён
-secret_code = "def50200f15aa5272afef3f89a212a6038e901e11ec63a5f28a443b17c6ac15a975053b9907f614402782fe0112faaef520889be634d57f7b4561c4fa3293768b2c3e9d9c694ae4b1e2c7d34f95cb5c48c2c0c3be5a313a7f7cd33297ae2283cd76b4516168722ffa2514a25d544d5be8b1d37c8739db6b9f6d070206acb2f252573b4be037e4daa52d563618efc3d1eddeca6ffa50600d5da910e377434a9807948bae890c250d7218381b17f5d1e667ab5fc29ca4c296ef246e023c9e0945f8a06505993e4f8ae94e1a7915200855ef88635f9a97e4ef3dfe484e0272d23b0e1f279ef7a9b19a66dd1e7958ea251d1267be4176834b3af4033113fde305f5a734ee4f18bb21a574f7a72e48aeaf026c7ae54c3454a0fa8467df999ed65e98b200d0553778731baccfc0e7e2324eb84982d18e28c7bfbb1e1787d7e079c572cec8a468c2ca185a7efa5091dca714e38cde76948d606ce7ae199bc5216dd4f7f0e8e3f38bb10989c01b518bb703f61fbd83b40ca7fa99ada0c1a31432abf9316359ac917e1c639e5bdccd6f816ef969d95469e229885ea50286a604fe82748952bb3174bbfa4f34e4264a1f48234477f05aebef0d69ca50f2eaa12016223319d50cbca4ef0586cce70e8f1afa913d58eefcc36e3000ba3e37c470061f388fffc312fba75"
+secret_code = "def502005cb021e4efe7135a546737a29fec2f2ef1cbbebd24aa7d201b1c209830695b39b35b05f739c33e3dc0bb4af3df4379078855dbec3d16c74bb3325a1a76f25c2ad0d91226f66fafd9f8ae8a7bb75929a9c82203f1e7b5753d6c3535ac37cdff5d355cd93f211128e4f0432c78da8437c82654a5712ee8ddfefb5f52751d76c71058daaed740b9122d0bfc44644e52b382a60c58cb2a0547a88d5679a98cf70d15ce261a3d44b6d4f10a73bff7a69ca244a29044f10491986d6acabac68ac3ca8f92f0dcf4bb466fd598604f5024428a0fff24aab8e96dc3f77e75246323d7068dd9370f905e08ea7bafcaba1e1ff12883f7e8bd8bcfa9a237f2417f2b0cb1fa7d4b7dc80540278a869a560ffdbebf9cf4cd8ab02196dad03babc32aaf3736461313401880d25d13db3312539158ae4860929535cbd19cc99080c8f0d2b26a18faad3dc10eb3211f64b9b5f1a94229f1468053bffadb43442763222b144deb38315bc5071d377486e5093be404c32ebc64a342906393825bfb9bf2499e8c55b2bdba367d12ec347726cc4723cdc1714d19bfc7df00d992474f8e8614135e23c3bef2ac4056df23e32bfef06b4e2e7de98b8c2e156c1e8711f39b48a7e930804159f780de960422101e207dd4fc065c364f3bad28c3a0a6069589b45d826d52724c"
 
 # Функция проверки актуальности работы токена
 def _is_expire(token: str):
@@ -124,6 +125,56 @@ class AmoCRMWrapper:
         
         return response                
 
+        _save_tokens(access_token, refresh_token)
+                            
+    def get_lead_by_id(self, lead_id):
+        url = "/api/v4/leads/" + str(lead_id)
+        return self._base_request(endpoint=url, type="get")
+    
+    def get_custom_field(self):
+        return self._base_request(endpoint="api/v4/contacts/custom_fields", type="get")
+    
+    def add_contact(self, name, last_name, email, phone, field_code, field_id):
+        
+        url = "/api/v4/contacts"
+        
+        data = [
+            {
+                "first_name": name,
+                "last_name": last_name,
+                "responsible_user_id": 31660866,
+                "created_by": 31660866,
+                "custom_fields_values": [
+                    {
+                        "fielld_id": {{field_code}},
+                        "values": [
+                            {
+                            "value": "test"
+                            }
+                        ]
+                    },
+                    {
+                        "field_code": "PHONE",
+                        "values":[
+                            {
+                                "enum_code": "WORK",
+                                "value": {{phone}}
+                            }
+                        ]
+                    },
+                    {
+                        "field_id": {{field_id}},
+                        "values": [
+                            {
+                                "value": {{email}}
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    
+    
 # Функция отправки запроса для получениия новой пары токенов
 def _get_new_tokens():
     data = {
@@ -136,6 +187,3 @@ def _get_new_tokens():
     response = requests.post("https://{}.amocrm.ru/oauth2/access_token".format(subdomain), json=data).json()
     access_token = response["access_token"]
     refresh_token = response["refresh_token"]
-
-    _save_tokens(access_token, refresh_token)
-                        
